@@ -9,8 +9,9 @@ jobs:
   productionDeployment:
     name: production-deployment
     runs-on: ubuntu-latest
-    environment: Production # You have to create the environment yourself in github -> settings -> secrets -> actions -> manage environment -> secrets
-    url: https://test.com
+    environment:
+      name: Production # You have to create the environment yourself in github -> settings -> secrets -> actions -> manage environment -> secrets
+      url: https://test.com
     strategy:
       matrix:
         node-version: [18.x]
