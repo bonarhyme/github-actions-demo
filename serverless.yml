@@ -1,0 +1,101 @@
+service: notes-api-version3
+frameworkVersion: '3'
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# To refer to anything here in the provider, we can do self:provider.stage etc
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'} # To add a variable do: ${}, to access a command line variaable, do ${opt:variableName}... So, doing sls deploy --stage prod, will set the variable name in our yml. We can also define a default variable as thus: ${opt:stage, 'dev'}
+  region: eu-north-1
+
+functions:
+  # Use this to authorize requests
+  authorizer:
+    handler: authorizer.handler
+    environment:
+      COGNITO_USERPOOL_ID: !Ref cognitoUserPool
+      COGNITO_WEB_CLIENT_ID: !Ref cognitoUserPoolWebClient
+  createNote:
+    handler: handler.createNote
+    # Use this to store variable names.
+    environment:
+      NOTES_TABLE_NAME: !Ref notesTable # Use this to access tables name from this current serverless file
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: !GetAtt notesTable.Arn # The dynamo table link actually. COnnection string!
+
+    events:
+      - http:
+          method: post
+          path: notes
+          # Use this to authorize requests
+          authorizer: authorizer
+
+  updateNote:
+    handler: handler.updateNote
+    environment:
+      NOTES_TABLE_NAME: !Ref notesTable
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: !GetAtt notesTable.Arn
+    events:
+      - http:
+          method: put
+          path: notes/{id}
+          authorizer: authorizer
+
+  deleteNote:
+    handler: handler.deleteNote
+    environment:
+      NOTES_TABLE_NAME: !Ref notesTable
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: !GetAtt notesTable.Arn
+    events:
+      - http:
+          method: delete
+          path: notes/{id}
+          authorizer: authorizer
+
+  getAllNotes:
+    handler: handler.getAllNotes
+    environment:
+      NOTES_TABLE_NAME: !Ref notesTable
+      AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: !GetAtt notesTable.Arn
+    events:
+      - http:
+          method: get
+          path: notes
+          # Use this section to create the type of authorizer you want. It can be userpool_authorizer or just authorizer
+          authorizer:
+            name: userpool_authorizer
+            # Use ssm (systems manager) to handle some variables (see symstems manager/ Application management / Parameter store)
+            # It has been handled in the resources.yml userPoolArnParam and you can access it as thus:
+            arn: ${ssm:/notes/${self:provider.stage}/userpoolArn} # This just like ${ssm:/notes/dev/userPoolArn}
+            # Or simply use the the !GetAtt to fetch the Arn ensuring that we pass a type
+            # type: COGNITO_USER_POOLS
+            # arn: !GetAtt cognitoUserPool.Arn
+
+# you can add CloudFormation resource templates here
+plugins:
+  - serverless-iam-roles-per-function # Install this plugin inorder to provide permission to specific lamba functions
+
+resources:
+  Resources: ${file(resources.yml)}

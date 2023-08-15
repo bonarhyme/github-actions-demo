@@ -1,0 +1,54 @@
+# Notes DynamoDB Table
+notesTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: notes-${self:provider.stage}
+    BillingMode: PAY_PER_REQUEST
+    # This is what will be used to primarily query the dynamoDB. It's like _id in mongoDB
+    AttributeDefinitions:
+      - AttributeName: notesId
+        AttributeType: S # S stands for String... check the documentation
+    KeySchema:
+      - AttributeName: notesId
+        KeyType: HASH
+
+# COgnito User pool -- This is used for access control!
+cognitoUserPool:
+  Type: AWS::Cognito::UserPool
+  Properties:
+    UserPoolName: MyNotesUP-${self:provider.stage}
+
+# User pool web client (You can add more than one client)
+cognitoUserPoolWebClient:
+  Type: AWS::Cognito::UserPoolClient
+  Properties:
+    UserPoolId: !Ref cognitoUserPool # Use !Ref to be getting Id of resouces while !GetAtt to get a resources as if an object e.g cognitoUserPool.UserPoolName
+    ClientName: web
+    AllowedOAuthFlowsUserPoolClient: true
+    AllowedOAuthScopes:
+      - phone
+      - email
+      - profile
+      - openid
+    AllowedOAuthFlows:
+      - implicit
+    CallbackURLs:
+      - http://localhost:3000
+    SupportedIdentityProviders:
+      - COGNITO
+
+# User pool domain
+cognitoUserPoolDomain:
+  Type: AWS::Cognito::UserPoolDomain
+  Properties:
+    UserPoolId: !Ref cognitoUserPool
+    Domain: mynotescd-${self:provider.stage}
+# Application parameter
+# Use ssm (systems manager) to handle some variables (see symstems manager/ Application management / Parameter store and then refer it in the serverless.yml. This way, we get a correct value without any changes to the value
+# This is another way to store items in a paramet in aws
+userPoolArnParam:
+  Type: AWS::SSM::Parameter
+  Properties:
+    Name: /notes/${self:provider.stage}/userpoolArn # Should be userpoolArn but it doesn't rally matter...
+    Type: String
+    Value: !GetAtt cognitoUserPool.Arn
