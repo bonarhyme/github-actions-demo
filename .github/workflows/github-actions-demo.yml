@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Production # You have to create the environment yourself in github -> settings -> secrets -> actions -> manage environment -> secrets
-      url: https://test.com
+      url: https://test.com # Suppose you want to provide a url
     strategy:
       matrix:
         node-version: [18.x]
