@@ -84,14 +84,14 @@ functions:
           method: get
           path: notes
           # Use this section to create the type of authorizer you want. It can be userpool_authorizer or just authorizer
-          authorizer:
-            name: userpool_authorizer
-            # Use ssm (systems manager) to handle some variables (see symstems manager/ Application management / Parameter store)
-            # It has been handled in the resources.yml userPoolArnParam and you can access it as thus:
-            # arn: ${ssm:/notes/${self:provider.stage}/userpoolArn} # This just like ${ssm:/notes/dev/userPoolArn}
-            # Or simply use the the !GetAtt to fetch the Arn ensuring that we pass a type
-            # type: COGNITO_USER_POOLS
-            # arn: !GetAtt cognitoUserPool.Arn
+          # authorizer:
+          #   name: userpool_authorizer
+          # Use ssm (systems manager) to handle some variables (see symstems manager/ Application management / Parameter store)
+          # It has been handled in the resources.yml userPoolArnParam and you can access it as thus:
+          # arn: ${ssm:/notes/${self:provider.stage}/userpoolArn} # This just like ${ssm:/notes/dev/userPoolArn}
+          # Or simply use the the !GetAtt to fetch the Arn ensuring that we pass a type
+          # type: COGNITO_USER_POOLS
+          # arn: !GetAtt cognitoUserPool.Arn
 
 # you can add CloudFormation resource templates here
 plugins:
