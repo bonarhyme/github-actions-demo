@@ -88,7 +88,7 @@ functions:
             name: userpool_authorizer
             # Use ssm (systems manager) to handle some variables (see symstems manager/ Application management / Parameter store)
             # It has been handled in the resources.yml userPoolArnParam and you can access it as thus:
-            arn: ${ssm:/notes/${self:provider.stage}/userpoolArn} # This just like ${ssm:/notes/dev/userPoolArn}
+            # arn: ${ssm:/notes/${self:provider.stage}/userpoolArn} # This just like ${ssm:/notes/dev/userPoolArn}
             # Or simply use the the !GetAtt to fetch the Arn ensuring that we pass a type
             # type: COGNITO_USER_POOLS
             # arn: !GetAtt cognitoUserPool.Arn
